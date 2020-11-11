@@ -12,6 +12,9 @@ export default class Users {
     description: string;
 
     @Column()
+    type: string;
+
+    @Column()
     energy: number;
 
     @Column()

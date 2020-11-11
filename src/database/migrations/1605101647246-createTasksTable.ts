@@ -18,6 +18,10 @@ export class createTasksTable1605101647246 implements MigrationInterface {
                     type: "varchar"
                 },
                 {
+                    name: "type",
+                    type: "varchar"
+                },
+                {
                     name: "description",
                     type: "text"
                 },
