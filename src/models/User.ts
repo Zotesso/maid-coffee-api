@@ -15,6 +15,5 @@ export default class User {
     @OneToOne(() => Char, char => char.user, {
         cascade: ['insert', 'update']
     })
-    @JoinColumn({name: 'user_id'})
     char: Char;
 }

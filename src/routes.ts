@@ -9,5 +9,6 @@ routes.post('/tasks', TasksController.create);
 routes.get('/tasks/:type', TasksController.show)
 
 routes.post('/user', UsersController.create);
+routes.get('/user', UsersController.index);
 
 export default routes;
