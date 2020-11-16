@@ -18,4 +18,6 @@ routes.post('/login', LoginController.login);
 routes.get('/char/:charName', CharacterController.show);
 routes.put('/char/doTask/:charName/:taskId', CharacterController.doTask);
 
+routes.get('/ranking', CharacterController.ranking);
+
 export default routes;

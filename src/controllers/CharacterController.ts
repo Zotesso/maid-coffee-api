@@ -4,7 +4,10 @@ import { getRepository } from 'typeorm';
 import Char from '../models/Char';
 
 import charsView from '../views/chars_view';
+import rankingView from '../views/ranking_view';
+
 import Task from '../models/Task';
+import checkForLevelUp from '../utils/checkForLevelUp';
 
 export default {
     async show(request: Request, response: Response) {
@@ -39,23 +42,47 @@ export default {
 
         if (task) {
             try {
-                await charRepository
-                    .createQueryBuilder()
-                    .update(Char)
-                    .set({
-                        energy: () => `energy - ${task.energy}`,
-                        knowledge: () => `knowledge + ${task.knowledge}`,
-                        popularity: () => `popularity + ${task.popularity}`
-                    })
-                    .where("name = :name", { name: charName })
-                    .execute();
 
-                return response.status(201).send();
+                const char = await charRepository.findOne({
+                    where: [
+                        { name: charName },
+                    ]
+                });
+
+                if (char) {
+                    const addLevel = checkForLevelUp(char?.knowledge, char?.popularity, char?.level);
+
+                    await charRepository
+                        .createQueryBuilder()
+                        .update(Char)
+                        .set({
+                            energy: () => `energy - ${task.energy}`,
+                            knowledge: () => `knowledge + ${task.knowledge}`,
+                            popularity: () => `popularity + ${task.popularity}`,
+                            level: () => `level + ${addLevel}`
+                        })
+                        .where("name = :name", { name: charName })
+                        .execute();
+
+                    return response.status(201).send();
+                }
             } catch (error) {
                 return response.status(404).json("Algo deu errado");
             }
         } else {
             return response.status(404).json("Task Inexistente");
         }
+    },
+
+    async ranking(request: Request, response: Response) {
+        const charRepository = getRepository(Char);
+
+        const charsInRanking = await charRepository
+                                    .createQueryBuilder("char")
+                                    .addOrderBy("level", "DESC")
+                                    .limit(10)
+                                    .getMany()
+
+        return response.json(rankingView.renderMany(charsInRanking));
     }
 };
