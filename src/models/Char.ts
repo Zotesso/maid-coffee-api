@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from "ty
 import User from './User';
 
 @Entity('chars')
-export default class Users {
+export default class Char {
     @PrimaryGeneratedColumn('increment')
     id: number;
 
