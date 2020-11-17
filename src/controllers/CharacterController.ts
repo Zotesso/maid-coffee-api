@@ -8,6 +8,7 @@ import rankingView from '../views/ranking_view';
 
 import Task from '../models/Task';
 import checkForLevelUp from '../utils/checkForLevelUp';
+import authenticateToken from '../utils/authenticateToken';
 
 export default {
     async show(request: Request, response: Response) {
@@ -15,62 +16,71 @@ export default {
 
         const charRepository = getRepository(Char);
 
-        const char = await charRepository.findOne({
-            where: [
-                { name: charName },
-            ]
-        });
+        if (authenticateToken(request.headers['authorization'] as string)) {
 
-        if (char) {
-            return response.json(charsView.render(char));
+            const char = await charRepository.findOne({
+                where: [
+                    { name: charName },
+                ]
+            });
+
+            if (char) {
+                return response.json(charsView.render(char));
+            } else {
+                return response.status(404).json("Personagem Não encontrado");
+            }
         } else {
-            return response.status(404).json("Personagem Não encontrado");
+            return response.status(401).send();
         }
     },
 
     async doTask(request: Request, response: Response) {
         const { charName, taskId } = request.params;
 
-        const taskRepository = getRepository(Task);
-        const charRepository = getRepository(Char);
+        if (authenticateToken(request.headers['authorization'] as string)) {
+            const taskRepository = getRepository(Task);
+            const charRepository = getRepository(Char);
 
-        const task = await taskRepository.findOne({
-            where: [
-                { id: taskId },
-            ]
-        });
+            const task = await taskRepository.findOne({
+                where: [
+                    { id: taskId },
+                ]
+            });
 
-        if (task) {
-            try {
+            if (task) {
+                try {
 
-                const char = await charRepository.findOne({
-                    where: [
-                        { name: charName },
-                    ]
-                });
+                    const char = await charRepository.findOne({
+                        where: [
+                            { name: charName },
+                        ]
+                    });
 
-                if (char) {
-                    const addLevel = checkForLevelUp(char?.knowledge, char?.popularity, char?.level);
+                    if (char) {
+                        const addLevel = checkForLevelUp(char?.knowledge, char?.popularity, char?.level);
 
-                    await charRepository
-                        .createQueryBuilder()
-                        .update(Char)
-                        .set({
-                            energy: () => `energy - ${task.energy}`,
-                            knowledge: () => `knowledge + ${task.knowledge}`,
-                            popularity: () => `popularity + ${task.popularity}`,
-                            level: () => `level + ${addLevel}`
-                        })
-                        .where("name = :name", { name: charName })
-                        .execute();
+                        await charRepository
+                            .createQueryBuilder()
+                            .update(Char)
+                            .set({
+                                energy: () => `energy - ${task.energy}`,
+                                knowledge: () => `knowledge + ${task.knowledge}`,
+                                popularity: () => `popularity + ${task.popularity}`,
+                                level: () => `level + ${addLevel}`
+                            })
+                            .where("name = :name", { name: charName })
+                            .execute();
 
-                    return response.status(201).send();
+                        return response.status(201).send();
+                    }
+                } catch (error) {
+                    return response.status(404).json("Algo deu errado");
                 }
-            } catch (error) {
-                return response.status(404).json("Algo deu errado");
+            } else {
+                return response.status(404).json("Task Inexistente");
             }
         } else {
-            return response.status(404).json("Task Inexistente");
+            return response.status(401).send();
         }
     },
 
@@ -78,10 +88,10 @@ export default {
         const charRepository = getRepository(Char);
 
         const charsInRanking = await charRepository
-                                    .createQueryBuilder("char")
-                                    .addOrderBy("level", "DESC")
-                                    .limit(10)
-                                    .getMany()
+            .createQueryBuilder("char")
+            .addOrderBy("level", "DESC")
+            .limit(10)
+            .getMany()
 
         return response.json(rankingView.renderMany(charsInRanking));
     }
