@@ -57,6 +57,7 @@ export default {
                     });
 
                     if (char) {
+                     if(char.energy - task.energy >= 0){
                         const addLevel = checkForLevelUp(char?.knowledge, char?.popularity, char?.level);
 
                         await charRepository
@@ -71,8 +72,11 @@ export default {
                             .where("name = :name", { name: charName })
                             .execute();
 
-                        return response.status(201).send();
+                        return response.status(201).json("Task completa com sucesso");
+                    }else{
+                        return response.json("Energia não suficiente");
                     }
+                }
                 } catch (error) {
                     return response.status(404).json("Algo deu errado");
                 }
