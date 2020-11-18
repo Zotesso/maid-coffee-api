@@ -1,1 +1,1 @@
-web: start:babel
+web: npm start:babel
