@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const UsersController_1 = __importDefault(require("./controllers/UsersController"));
+const TasksController_1 = __importDefault(require("./controllers/TasksController"));
+const LoginController_1 = __importDefault(require("./controllers/LoginController"));
+const CharacterController_1 = __importDefault(require("./controllers/CharacterController"));
+const routes = express_1.Router();
+routes.post('/tasks', TasksController_1.default.create);
+routes.get('/tasks/:type', TasksController_1.default.show);
+routes.post('/user', UsersController_1.default.create);
+routes.get('/user', UsersController_1.default.index);
+routes.post('/login', LoginController_1.default.login);
+routes.get('/char/:charName', CharacterController_1.default.show);
+routes.put('/char/doTask/:charName/:taskId', CharacterController_1.default.doTask);
+routes.get('/ranking', CharacterController_1.default.ranking);
+exports.default = routes;
